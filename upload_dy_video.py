@@ -48,7 +48,7 @@ def input_brife(driver, describe=""):
 
 
 publish_file = []
-def publish_douyin(driver,path_mp4,describe_title,describe):
+def publish_douyin(driver:webdriver.Chrome,path_mp4,describe_title,describe,collection=None):
         """
         作用：发布抖音视频
         """
@@ -60,7 +60,7 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
 
         # 等待视频上传完成
         print("视频还在上传中···")
-        
+        time.sleep(80)
         while True:
             time.sleep(5)
             try:
@@ -118,6 +118,9 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
             by=By.CSS_SELECTOR, value="input.semi-input.semi-input-default"
         ).send_keys(describe_title)
         print("输入视频描述title完成！")
+        time.sleep(1)
+        
+        input_brife(driver, describe)
         # 选择合集
         time.sleep(1)
         try:
@@ -128,9 +131,19 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
             ).click()
             time.sleep(1)
             print("选择合集第一个")
-            driver.find_element(
-                by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
-            ).click()
+            if collection==None:
+                driver.find_elements(
+                    by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
+                )[0].click()
+            else:
+                els=driver.find_elements(
+                    by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
+                )
+                for el in els:
+                    if collection in el.text:
+                        el.click()
+                        break
+            
         except Exception as e:
             print("选择合集出错")
         # 设置选项
@@ -146,7 +159,7 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
         # driver.find_element(by=By.XPATH,value='//*[@class="semi-popover-content"]//*[text()="中关村人工智能科技园"]').click()
 
         # 同步到西瓜视频
-        time.sleep(1)
+        # time.sleep(1)
         # driver.find_element(by=By.XPATH,value='//div[@class="preview--27Xrt"]//input').click()   # 默认启用一次后，后面默认启用了。
         # time.sleep(1)
         # driver.find_element(by=By.XPATH,value='//*[@class="card-pen--2P8rh"]').click()
@@ -155,7 +168,6 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
         # time.sleep(1)
         # driver.find_element(by=By.XPATH,value='//button[text()="确定"]').click()
 
-        input_brife(driver, describe)
         time.sleep(1)
 
         # 人工进行检查并发布
@@ -165,11 +177,11 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
         driver.find_element(by=By.XPATH, value='//button[text()="发布"]').click()
         return True
 
-def upload(folder_path=None, describe_title=None, describe=None):
+def upload(folder_path=None, describe_title=None, describe=None,collection=None):
     # 基本信息
     if folder_path is None:
         # 视频存放路径
-        folder_path = f"F:{os.sep}360CARDVR{os.sep}SECVIDEO"
+        folder_path = f"G:{os.sep}360AutoRec{os.sep}SECVIDEO"
     if describe_title is None:
         # 视频描述
         describe_title = f"行车记录仪,记录生活"
@@ -198,8 +210,8 @@ def upload(folder_path=None, describe_title=None, describe=None):
     # 进入创作者页面，并上传视频
     driver.get("https://creator.douyin.com/creator-micro/home")
     time.sleep(2)
-
-    for i in range(70):
+    count=0
+    for i in range(len(files)):
         if i >= len(files):
             break
         file=files[i]
@@ -212,18 +224,28 @@ def upload(folder_path=None, describe_title=None, describe=None):
             print("未检查到视频路径，程序终止！")
             exit()
         try:
-            new_path = path_mp4.replace("_out","")
+            new_path = path_mp4.replace("_out","").replace(".mp4","").replace(".MP4","")
+            new_path=new_path[new_path.rfind(os.sep)+1:]
             my_log.log(f"new_path={new_path}")
-            if new_path in publish_file:
-                print(f"已发布过该视频，跳过！{path_mp4}")
+            flag = False
+            for publish in publish_file:
+                if new_path in publish:
+                    print(f"已发布过该视频，跳过！{path_mp4}")
+                    flag=True
+                    break
+            if flag:
                 continue
             else:
                 print(f"{path_mp4} 该视频未發佈,开始发布视频！")
-            if publish_douyin(driver=driver, path_mp4=path_mp4, describe_title=describe_title, describe=describe):
+            if publish_douyin(driver=driver, path_mp4=path_mp4, describe_title=describe_title, describe=describe,collection=collection):
                 publish_file.append(path_mp4)
                 print("发布成功！size=", len(publish_file))
+                count+=1
                 with open("publish_file.txt", "a") as f:
                     f.write(f"{path_mp4}\n")
+            if count>=70:
+                my_log.log("发布视频数量已达到70个，程序终止！")
+                break
         except Exception as e:
             print(e)
             print("发布失败！")
@@ -275,7 +297,9 @@ def setup_driver():
 
 if __name__ == "__main__":
     # 开始执行视频发布
-    upload()
+    # upload(folder_path="G:\\360AutoRec\\EMERGENCY", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="紧急")
+    upload(folder_path="G:\\360AutoRec\\REC", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="行驶")
+    upload(folder_path="G:\\360AutoRec\\rec_有电话", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="Self")
     input("Press Enter to close...")  # 保持窗口打开
 
     # test()

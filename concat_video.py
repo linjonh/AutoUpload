@@ -10,7 +10,7 @@ folder_path = [
 ]
 names = [
     # "SECVIDEO_list.txt",
-    "REC_list.txt",
+    # "REC_list.txt",
     "EMERGENCY_list.txt",
 ]
 
@@ -106,12 +106,12 @@ def concat_video(dir_file_name: str):
                     if j < len(lines):
                         lines[j] = ""
                 fw.writelines(lines)
-        break
+        # break
 
 
 if __name__ == "__main__":
     for i, name in enumerate(names):
-        dir = save_file_list(folder_path[i], name)
-        # my_log.log(f"开始合并{name}")
-        # concat_video(name)
+        # dir = save_file_list(folder_path[i], name)
+        my_log.log(f"开始合并{name}")
+        concat_video(name)
     pass
