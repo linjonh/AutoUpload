@@ -53,7 +53,7 @@ def publish_douyin(driver:webdriver.Chrome,path_mp4,describe_title,describe,coll
         作用：发布抖音视频
         """
         driver.find_element(by=By.XPATH, value='//*[text()="发布视频"]').click()
-        time.sleep(1)
+        time.sleep(2)
         driver.find_element(by=By.XPATH, value='//input[@type="file"]').send_keys(
             path_mp4
         )
@@ -175,7 +175,19 @@ def publish_douyin(driver:webdriver.Chrome,path_mp4,describe_title,describe,coll
         # # 点击发布
         print("点击发布")
         driver.find_element(by=By.XPATH, value='//button[text()="发布"]').click()
-        return True
+        count=0
+        while True:
+            time.sleep(0.3)
+            try:
+                el = driver.find_element(by=By.CSS_SELECTOR,value="div.semi-toast-content")
+                my_log.log(el.text)
+                return False,el.text
+            except Exception as e:
+                count+=1
+                if count>7:
+                    break
+                pass
+        return True,"发布成功！"
 
 def upload(folder_path=None, describe_title=None, describe=None,collection=None):
     # 基本信息
@@ -237,19 +249,25 @@ def upload(folder_path=None, describe_title=None, describe=None,collection=None)
                 continue
             else:
                 print(f"{path_mp4} 该视频未發佈,开始发布视频！")
-            if publish_douyin(driver=driver, path_mp4=path_mp4, describe_title=describe_title, describe=describe,collection=collection):
+            result,text= publish_douyin(driver=driver, path_mp4=path_mp4, describe_title=describe_title, describe=describe,collection=collection)
+            if result:  
                 publish_file.append(path_mp4)
                 print("发布成功！size=", len(publish_file))
                 count+=1
                 with open("publish_file.txt", "a") as f:
                     f.write(f"{path_mp4}\n")
-            if count>=70:
-                my_log.log("发布视频数量已达到70个，程序终止！")
+            else:
+                print(f"发布失败！{text}")
                 break
+            # if count>=70:
+            #     my_log.log("发布视频数量已达到70个，程序终止！")
+            #     break
         except Exception as e:
             print(e)
             print("发布失败！")
         time.sleep(2)
+    my_log.log(f"已发布{count}个视频")
+    
     with open("publish_file.txt", "w") as f:
         f.write("\n".join(publish_file))
 
@@ -298,8 +316,9 @@ def setup_driver():
 if __name__ == "__main__":
     # 开始执行视频发布
     # upload(folder_path="G:\\360AutoRec\\EMERGENCY", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="紧急")
-    upload(folder_path="G:\\360AutoRec\\REC", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="行驶")
+    # upload(folder_path="G:\\360AutoRec\\REC", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="行驶")
     upload(folder_path="G:\\360AutoRec\\rec_有电话", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="Self")
-    input("Press Enter to close...")  # 保持窗口打开
+    # input("Press Enter to close...")  # 保持窗口打开
+    
 
     # test()
