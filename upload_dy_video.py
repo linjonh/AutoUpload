@@ -8,12 +8,14 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ChromeService
 
+import my_log
+
 
 def input_brife(driver, describe=""):
     print("输入视频简单描述。。")
-    tag = driver.find_element(
-        by=By.CSS_SELECTOR, value="div.outerdocbody.editor-kit-outer-container"
-    )
+    # tag = driver.find_element(
+    #     by=By.CSS_SELECTOR, value="div.outerdocbody.editor-kit-outer-container"
+    # )
     innerTag = driver.find_element(
         by=By.CSS_SELECTOR,
         value="div.zone-container.editor-kit-container.editor.editor-comp-publish.notranslate.chrome.window.chrome88",
@@ -57,14 +59,15 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
         )
 
         # 等待视频上传完成
+        print("视频还在上传中···")
+        
         while True:
             time.sleep(5)
             try:
                 driver.find_element(by=By.XPATH, value='//*[text()="重新上传"]')
                 break
             except Exception as e:
-                print("视频还在上传中···")
-
+                pass
         print("视频已上传完成！")
 
         # 封面地址获取
@@ -90,16 +93,22 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
         # driver.find_element(by=By.XPATH,value='//*[text()="裁剪封面"]/..//*[text()="确定"]').click()
         # time.sleep(3)
         # driver.find_element(by=By.XPATH,value='//*[text()="设置封面"]/..//*[contains(@class,"upload")]//*[text()="确定"]').click()
-        driver.find_element(
-            by=By.CSS_SELECTOR, value="div.recommendCover-vWWsHB"
-        ).click()
-        time.sleep(1)
-        driver.find_element(
-            by=By.CSS_SELECTOR,
-            value="div.semi-modal-confirm button.semi-button.semi-button-primary",
-        ).click()
-        print("封面确定完成！")
-
+        
+        #封面选择
+        # driver.find_element(
+        #     by=By.CSS_SELECTOR, value="div.recommendCover-vWWsHB"
+        # ).click()
+        # while True:
+        #     time.sleep(5)
+        #     try:
+        #         driver.find_element(
+        #             by=By.CSS_SELECTOR,
+        #             value="div.semi-modal-confirm button.semi-button.semi-button-primary",
+        #         ).click()
+        #         print("封面确定完成！")
+        #         break
+        #     except Exception as e:
+        #         print("封面确定失败！")
         time.sleep(1)
         # 输入视频描述
         print("输入视频描述title···")
@@ -123,7 +132,7 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
                 by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
             ).click()
         except Exception as e:
-            print("选择合集出错", e)
+            print("选择合集出错")
         # 设置选项
         # time.sleep(1)
         # driver.find_element(by=By.XPATH,value='//*[@class="radio--4Gpx6"]').click()
@@ -156,13 +165,16 @@ def publish_douyin(driver,path_mp4,describe_title,describe):
         driver.find_element(by=By.XPATH, value='//button[text()="发布"]').click()
         return True
 
-def upload():
+def upload(folder_path=None, describe_title=None, describe=None):
     # 基本信息
-    # 视频存放路径
-    folder_path = f"F:{os.sep}360CARDVR{os.sep}SECVIDEO"
-    # 视频描述
-    describe_title = f"行车记录仪,记录生活"
-    describe = f"#行车记录仪"
+    if folder_path is None:
+        # 视频存放路径
+        folder_path = f"F:{os.sep}360CARDVR{os.sep}SECVIDEO"
+    if describe_title is None:
+        # 视频描述
+        describe_title = f"行车记录仪,记录生活"
+    if describe is None:
+        describe = f"#行车记录仪"
 
     # path = pathlib.Path(folder_path)
 
@@ -187,17 +199,22 @@ def upload():
     driver.get("https://creator.douyin.com/creator-micro/home")
     time.sleep(2)
 
-    for i in files:
-        print(i)
-        if ".mp4" in str(i).lower():
-            path_mp4 = os.path.join(folder_path, i)
+    for i in range(70):
+        if i >= len(files):
+            break
+        file=files[i]
+        print(f"{i} : {file}")
+        if ".mp4" in str(file).lower():
+            path_mp4 = os.path.join(folder_path, file)
         if path_mp4 != "":
             print("检查到视频路径：" + path_mp4)
         else:
             print("未检查到视频路径，程序终止！")
             exit()
         try:
-            if path_mp4 in publish_file:
+            new_path = path_mp4.replace("_out","")
+            my_log.log(f"new_path={new_path}")
+            if new_path in publish_file:
                 print(f"已发布过该视频，跳过！{path_mp4}")
                 continue
             else:
@@ -250,7 +267,7 @@ def setup_driver():
     driver = webdriver.Chrome(
         options=options,
         service=ChromeService(
-            executable_path="G:\\WorkSpaceXXX\\MyPROJECT\\AutoUpload\\.venv\\Scripts\\chromedriver.exe"
+            executable_path="G:\\chromedriver.exe"
         ),
     )
     return driver
