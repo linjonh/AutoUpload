@@ -6,12 +6,13 @@ import my_log
 folder_path = [
     # f"G:{os.sep}360AutoRec{os.sep}SECVIDEO",
     f"G:{os.sep}360AutoRec{os.sep}REC",
-    f"G:{os.sep}360AutoRec{os.sep}EMERGENCY",
+    # f"H:\REC",
+    # f"G:{os.sep}360AutoRec{os.sep}EMERGENCY",
 ]
 names = [
     # "SECVIDEO_list.txt",
-    # "REC_list.txt",
-    "EMERGENCY_list.txt",
+    "REC_list.txt",
+    # "EMERGENCY_list.txt",
 ]
 
 
