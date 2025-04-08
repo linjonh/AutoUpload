@@ -7,6 +7,7 @@ import time
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver import ChromeService
+from selenium.webdriver.remote.webelement import WebElement
 
 import my_log
 
@@ -97,20 +98,20 @@ def publish_douyin(
     # driver.find_element(by=By.XPATH,value='//*[text()="设置封面"]/..//*[contains(@class,"upload")]//*[text()="确定"]').click()
 
     # 封面选择
-    # driver.find_element(
-    #     by=By.CSS_SELECTOR, value="div.recommendCover-vWWsHB"
-    # ).click()
-    # while True:
-    #     time.sleep(5)
-    #     try:
-    #         driver.find_element(
-    #             by=By.CSS_SELECTOR,
-    #             value="div.semi-modal-confirm button.semi-button.semi-button-primary",
-    #         ).click()
-    #         print("封面确定完成！")
-    #         break
-    #     except Exception as e:
-    #         print("封面确定失败！")
+    driver.find_element(
+        by=By.CSS_SELECTOR, value="div.recommendCover-vWWsHB"
+    ).click()
+    while True:
+        time.sleep(2)
+        try:
+            driver.find_element(
+                by=By.CSS_SELECTOR,
+                value="div.semi-modal-confirm button.semi-button.semi-button-primary",
+            ).click()
+            print("封面确定完成！")
+            break
+        except Exception as e:
+            print("封面确定失败！")
     time.sleep(1)
     # 输入视频描述
     print("输入视频描述title···")
@@ -124,30 +125,32 @@ def publish_douyin(
 
     input_brife(driver, describe)
     # 选择合集
-    time.sleep(1)
-    try:
-        print("选择合集")
-        driver.find_element(
-            by=By.CSS_SELECTOR,
-            value="div.semi-select.select-collection-nkL6sA.semi-select-single",
-        ).click()
-        time.sleep(1)
-        print("选择合集第一个")
-        if collection == None:
-            driver.find_elements(
-                by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
-            )[0].click()
-        else:
-            els = driver.find_elements(
-                by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
-            )
-            for el in els:
-                if collection in el.text:
-                    el.click()
-                    break
+    
+    # time.sleep(1)
+    # try:
+    #     print("选择合集")
+    #     driver.find_element(
+    #         by=By.CSS_SELECTOR,
+    #         value="div.semi-select.select-collection-nkL6sA.semi-select-single",
+    #     ).click()
+    #     time.sleep(1)
+    #     print("选择合集第一个")
+    #     if collection == None:
+    #         driver.find_elements(
+    #             by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
+    #         )[0].click()
+    #     else:
+    #         els = driver.find_elements(
+    #             by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
+    #         )
+    #         for el in els:
+    #             if collection in el.text:
+    #                 el.click()
+    #                 break
 
-    except Exception as e:
-        print("选择合集出错")
+    # except Exception as e:
+    #     print("选择合集出错")
+    
     # 设置选项
     # time.sleep(1)
     # driver.find_element(by=By.XPATH,value='//*[@class="radio--4Gpx6"]').click()
@@ -169,6 +172,9 @@ def publish_douyin(
     # driver.find_element(by=By.XPATH,value='//*[@class="DraftEditor-root"]//br').send_keys(describe + " #上热门")
     # time.sleep(1)
     # driver.find_element(by=By.XPATH,value='//button[text()="确定"]').click()
+
+    time.sleep(1)
+    driver.find_elements(by=By.CSS_SELECTOR, value='div label.radio-d4zkru')[4].click()
 
     time.sleep(1)
 
@@ -217,7 +223,7 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
         key=lambda f: os.path.getmtime(os.path.join(folder_path, f)),
     )
     if os.path.exists("publish_file.txt"):
-        with open("publish_file.txt", "r") as f:
+        with open("publish_file.txt", "r",encoding="utf-8") as f:
             publish_file = f.read().split("\n")
             print(f"publish_file size={len(publish_file)}")
     else:
@@ -271,7 +277,7 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
                 publish_file.append(path_mp4)
                 my_log.log("发布成功！size=", len(publish_file))
                 count += 1
-                with open("publish_file.txt", "a") as f:
+                with open("publish_file.txt", "a",encoding="utf-8") as f:
                     f.write(f"{path_mp4}\n")
             else:
                 my_log.log(f"发布失败！{text}")
@@ -285,7 +291,7 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
         time.sleep(2)
     my_log.log(f"已发布{count}个视频")
 
-    with open("publish_file.txt", "w") as f:
+    with open("publish_file.txt", "w",encoding="utf-8") as f:
         f.write("\n".join(publish_file))
 
 
@@ -330,7 +336,8 @@ if __name__ == "__main__":
     # 开始执行视频发布
     # upload(folder_path="G:\\360AutoRec\\EMERGENCY", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="紧急")
     upload(
-        folder_path="G:\\360AutoRec\\REC",
+        folder_path="G:\\360AutoRec\\rec_有电话",
+        # folder_path="E:\\360CARDVR\\REC",
         describe_title="行车记录仪,记录生活",
         describe="#行车记录仪",
         collection="行驶",
