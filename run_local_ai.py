@@ -103,6 +103,11 @@ def sync_api(data_str: str = data):
             "stream": False,
         },
     )
+    print("请求返回的数据：", response)
+    if response.status_code != 200:
+        print("请求失败，状态码：", response.status_code)
+        return None
+    # 处理响应数据
     dict_str: dict = json.loads(response.text)
     result: str = dict_str.get("response")
     if result is None:
