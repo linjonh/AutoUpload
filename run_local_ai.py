@@ -53,7 +53,7 @@ Oh no! Whatever you were looking for isn't there, sorry about that...
 """
 
 
-def stream_api(data_str: str = data,callback=None):
+def stream_api(data_str: str = data,model="deepseek-r1:8B",callback=None):
     """使用流式API"""
     # 1. 创建一个请求，设置请求方法、URL和请求体
     # 2. 使用requests库发送请求，并获取响应流
@@ -67,7 +67,7 @@ def stream_api(data_str: str = data,callback=None):
         url="http://localhost:11434/api/generate",
         data=None,
         json={
-            "model": "deepseek-r1:8B",
+            "model": model,
             "prompt": f"帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译：{data_str}",
             "stream": True,
         },
@@ -86,7 +86,7 @@ def stream_api(data_str: str = data,callback=None):
 
 
 @timeCost
-def sync_api(data_str: str = data):
+def sync_api(data_str: str = data,model="deepseek-r1:8B"):
     """使用同步API"""
     # 1. 创建一个请求，设置请求方法、URL和请求体
     # 2. 使用requests库发送请求，并获取响应
@@ -98,7 +98,7 @@ def sync_api(data_str: str = data):
         url="http://localhost:11434/api/generate",
         data=None,
         json={
-            "model": "deepseek-r1:8B",
+            "model": model,
             "prompt": f"帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译：{data_str}",
             "stream": False,
         },
@@ -123,8 +123,19 @@ def sync_api(data_str: str = data):
 
 
 if __name__ == "__main__":
+    #解析命令行参数，获取大模型名称
+    import argparse
+    parser = argparse.ArgumentParser(description="翻译markdown文件")
+    parser.add_argument(
+        "-m", "--model", type=str, default="deepseek-r1:8B", help="大模型名称"
+    )
+    args = parser.parse_args()
+    model = args.model
+    print(f"大模型名称：{model}")
+    # stream_api(model=model)  
+    
     @timeCost
-    def translate():
+    def translate(model):
         """翻译函数"""
         i18n = "i18n/en/docusaurus-plugin-content-docs/current"
         count = 0
