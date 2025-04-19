@@ -105,6 +105,9 @@ def sync_api(data_str: str = data):
     )
     dict_str: dict = json.loads(response.text)
     result: str = dict_str.get("response")
+    if result is None:
+        print("没有返回结果")
+        return None
     index = result.find("</think>") + len("</think>")
     string: str = result[index:]
     response = string.strip()
@@ -129,7 +132,9 @@ if __name__ == "__main__":
                     with open(path, "r", encoding="utf-8") as f:
                         data = f.read()
                     response = sync_api(data)
-
+                    if response is None:
+                        print("翻译失败")
+                        continue
                     with open(path.replace(i18n, "docs"), "w", encoding="utf-8") as f:
                         f.write(response)
                 # break
