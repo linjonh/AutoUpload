@@ -147,13 +147,13 @@ if __name__ == "__main__":
                     print(f"正在翻译文件：{path}")
                     with open(path, "r", encoding="utf-8") as f:
                         data = f.read()
-                    response = sync_api(data)
+                    response = sync_api(data,model=model)
                     if response is None:
                         print("翻译失败")
                         continue
                     with open(path.replace(i18n, "docs"), "w", encoding="utf-8") as f:
                         f.write(response)
-                # break
-            # break
+                break
+            break
         print(f"翻译完成，共翻译{count}个文件")
-    translate()
+    translate(model)
