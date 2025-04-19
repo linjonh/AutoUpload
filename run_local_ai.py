@@ -115,17 +115,24 @@ def sync_api(data_str: str = data):
 
 
 if __name__ == "__main__":
-    i18n = "i18n/en/docusaurus-plugin-content-docs/current"
-    for root, dirs, files in os.walk(f"../rhino-doc/{i18n}/"):
-        for file in files:
-            if file.endswith(".md"):
-                path = os.path.join(root, file)
-                print(f"正在翻译文件：{path}")
-                with open(path, "r", encoding="utf-8") as f:
-                    data = f.read()
-                response = sync_api(data)
+    @timeCost
+    def translate():
+        """翻译函数"""
+        i18n = "i18n/en/docusaurus-plugin-content-docs/current"
+        count = 0
+        for root, dirs, files in os.walk(f"../rhino-doc/{i18n}/"):
+            for file in files:
+                if file.endswith(".md"):
+                    count+=1
+                    path = os.path.join(root, file)
+                    print(f"正在翻译文件：{path}")
+                    with open(path, "r", encoding="utf-8") as f:
+                        data = f.read()
+                    response = sync_api(data)
 
-                with open(path.replace(i18n, "docs"), "w", encoding="utf-8") as f:
-                    f.write(response)
+                    with open(path.replace(i18n, "docs"), "w", encoding="utf-8") as f:
+                        f.write(response)
+                # break
             # break
-        # break
+        print(f"翻译完成，共翻译{count}个文件")
+    translate()
