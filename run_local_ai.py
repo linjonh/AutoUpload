@@ -153,7 +153,7 @@ if __name__ == "__main__":
                         continue
                     with open(path.replace(i18n, "docs"), "w", encoding="utf-8") as f:
                         f.write(response)
-                break
-            break
+                # break
+            # break
         print(f"翻译完成，共翻译{count}个文件")
     translate(model)
