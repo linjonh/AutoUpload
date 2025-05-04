@@ -1,2 +1,4 @@
+*.key
 .venv
-app.log
+__pycache__/
+*.log
