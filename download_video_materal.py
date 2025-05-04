@@ -69,7 +69,13 @@ def main(count=2):
     # 获取当前CPU核心数
     cpu_count = os.cpu_count()
     log(f"当前CPU核心数：{cpu_count}")
-    ThreadExecutor = ThreadPoolExecutor(max_workers=cpu_count)
+    # 判断任务类型
+    is_io_bound = True  # 如果是 I/O 密集型任务，设置为 True
+
+    # 动态设置 max_workers
+    max_workers = cpu_count() * 2 if is_io_bound else cpu_count()
+    
+    ThreadExecutor = ThreadPoolExecutor(max_workers=max_workers)
     futures = []
     thread = threading.Thread(target=handle_result)
     thread.start()
