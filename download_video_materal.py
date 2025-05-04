@@ -1,4 +1,5 @@
 from concurrent.futures import Future, ThreadPoolExecutor
+import os
 import queue
 import sys
 from threading import Lock
@@ -65,7 +66,10 @@ def main(count=2):
     # 整数最大值
     log(sys.maxsize)
     # 多线程下载
-    ThreadExecutor = ThreadPoolExecutor(max_workers=20)
+    # 获取当前CPU核心数
+    cpu_count = os.cpu_count()
+    log(f"当前CPU核心数：{cpu_count}")
+    ThreadExecutor = ThreadPoolExecutor(max_workers=cpu_count)
     futures = []
     thread = threading.Thread(target=handle_result)
     thread.start()
