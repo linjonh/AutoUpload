@@ -15,6 +15,10 @@ import time_tools
 
 def downlod_from_net(url,need_log=False):
     res = requests.get(url)
+    if res.status_code != 200:
+        log(f"请求失败，状态码：{res.status_code}")
+        log(f"失败原因：{res.text}")
+        return None
     result = res.json()
     if need_log:
         log(f"====> url={url}")
