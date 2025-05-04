@@ -1,0 +1,20 @@
+-- database: ./data/video_download.db
+
+SELECT * FROM video_material WHERE video_id==137
+OR download_url == 'https://txmov2.a.kwimgs.com/upic/2024/11/01/15/BMjAyNDExMDExNTU4MjRfMzkwNzYwOTQwNl8xNDc0ODUyNTE4NjlfMV8z_b_B574655899580f9579c6cfcd57537932d.mp4?clientCacheKey=3xgmt24nw6jvvdy_b.mp4&tt=b&di=88a55fd&bp=10000' 
+ORDER BY `download_url` ASC;
+
+-- 写一个查询download_url字段有重复数据并删除该重复的记录的sql语句
+-- 1. 查询download_url字段有重复数据的记录
+SELECT download_url, COUNT(*) as count
+FROM video_material
+GROUP BY download_url
+HAVING count > 1;
+-- 2. 删除重复的记录，只保留一条
+DELETE FROM video_material
+WHERE rowid NOT IN (
+    SELECT MIN(rowid)
+    FROM video_material
+    GROUP BY download_url
+);
+
