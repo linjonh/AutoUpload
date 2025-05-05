@@ -9,7 +9,12 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver import ChromeService
 from selenium.webdriver.remote.webelement import WebElement
 
+from data_base.download_video_db import video_download_db
+from main_flask import query_data_base
+from my_log import log
 import my_log
+from video_handler.save_download_video import save_download_video
+from video_handler.video_processor import add_watermark
 
 
 def input_brife(driver, describe=""):
@@ -98,9 +103,7 @@ def publish_douyin(
     # driver.find_element(by=By.XPATH,value='//*[text()="设置封面"]/..//*[contains(@class,"upload")]//*[text()="确定"]').click()
 
     # 封面选择
-    driver.find_element(
-        by=By.CSS_SELECTOR, value="div.recommendCover-vWWsHB"
-    ).click()
+    driver.find_element(by=By.CSS_SELECTOR, value="div.recommendCover-vWWsHB").click()
     while True:
         time.sleep(2)
         try:
@@ -125,32 +128,31 @@ def publish_douyin(
 
     input_brife(driver, describe)
     # 选择合集
-    
-    # time.sleep(1)
-    # try:
-    #     print("选择合集")
-    #     driver.find_element(
-    #         by=By.CSS_SELECTOR,
-    #         value="div.semi-select.select-collection-nkL6sA.semi-select-single",
-    #     ).click()
-    #     time.sleep(1)
-    #     print("选择合集第一个")
-    #     if collection == None:
-    #         driver.find_elements(
-    #             by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
-    #         )[0].click()
-    #     else:
-    #         els = driver.find_elements(
-    #             by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
-    #         )
-    #         for el in els:
-    #             if collection in el.text:
-    #                 el.click()
-    #                 break
 
-    # except Exception as e:
-    #     print("选择合集出错")
-    
+    time.sleep(1)
+    try:
+        print("选择合集")
+        driver.find_element(
+            by=By.CSS_SELECTOR,
+            value="div.semi-select.select-collection-nkL6sA.semi-select-single",
+        ).click()
+        time.sleep(1)
+        print("选择合集第一个")
+        if collection == None:
+            driver.find_elements(
+                by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
+            )[0].click()
+        else:
+            els = driver.find_elements(
+                by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
+            )
+            for el in els:
+                if collection in el.text:
+                    el.click()
+                    break
+    except Exception as e:
+        print("选择合集出错")
+
     # 设置选项
     # time.sleep(1)
     # driver.find_element(by=By.XPATH,value='//*[@class="radio--4Gpx6"]').click()
@@ -174,7 +176,8 @@ def publish_douyin(
     # driver.find_element(by=By.XPATH,value='//button[text()="确定"]').click()
 
     time.sleep(1)
-    driver.find_elements(by=By.CSS_SELECTOR, value='div label.radio-d4zkru')[4].click()
+    #选择保密性选项
+    driver.find_elements(by=By.CSS_SELECTOR, value="div label.radio-d4zkru")[0].click()
 
     time.sleep(1)
 
@@ -202,7 +205,7 @@ def publish_douyin(
     return True, "发布成功！"
 
 
-def upload(folder_path=None, describe_title=None, describe=None, collection=None):
+def upload(folder_path=None, describe_title=None, describe=None, collection=None,publish_file="publish_file.txt"):
     # 基本信息
     if folder_path is None:
         # 视频存放路径
@@ -222,8 +225,8 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
         os.listdir(folder_path),
         key=lambda f: os.path.getmtime(os.path.join(folder_path, f)),
     )
-    if os.path.exists("publish_file.txt"):
-        with open("publish_file.txt", "r",encoding="utf-8") as f:
+    if os.path.exists(publish_file):
+        with open(publish_file, "r", encoding="utf-8") as f:
             publish_file = f.read().split("\n")
             print(f"publish_file size={len(publish_file)}")
     else:
@@ -277,7 +280,7 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
                 publish_file.append(path_mp4)
                 my_log.log("发布成功！size=", len(publish_file))
                 count += 1
-                with open("publish_file.txt", "a",encoding="utf-8") as f:
+                with open(publish_file, "a", encoding="utf-8") as f:
                     f.write(f"{path_mp4}\n")
             else:
                 my_log.log(f"发布失败！{text}")
@@ -291,7 +294,7 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
         time.sleep(2)
     my_log.log(f"已发布{count}个视频")
 
-    with open("publish_file.txt", "w",encoding="utf-8") as f:
+    with open("publish_file.txt", "w", encoding="utf-8") as f:
         f.write("\n".join(publish_file))
 
 
@@ -332,17 +335,95 @@ def setup_driver():
     return driver
 
 
+def auto_upload():
+    # 查询数据库
+    table_name = "video_material"
+    db = video_download_db(table_name=table_name)
+    # 读取json配置文件获取最后执行的page_num,page_size
+    #需要检查是否存在config.json文件
+    if not os.path.exists("config.json"):
+        # 如果不存在，则创建一个新的config.json文件
+        config = {
+            "page_num": 1,
+            "page_size": 2,
+        }
+        with open("config.json", "w") as f:
+            json.dump(config, f, indent=4)
+    with open("config.json", "r") as f:
+        config = json.load(f)
+        page_num = config.get("page_num", 1)
+        page_size = config.get("page_size", 2)
+    list_videos = query_data_base(page_num=page_num, page_size=page_size)
+    for video in list_videos:
+        video_id = video["video_id"]
+        video_title: str = video["video_title"]
+        download_url = video["download_url"]
+        image_url = video["image_url"]
+        video_number = video["video_number"]
+        Video_platform = video["Video_platform"]
+        time = video["time"]
+        tips = video["tips"]
+        #下载好视频
+        path=save_download_video(video_id, download_url)
+        #添加水印
+        code=add_watermark(input=path,output=f"temp/video_{video_id}_out.mp4")
+        os.remove(path)
+        if code != 0:
+            print("添加水印失败！")
+            continue
+        #准备好文案
+        describe_title, describe = handle_pub_txt(video_title)
+        # 发布视频
+        dir=os.path.dirname(os.path.abspath(path))
+        upload(
+            folder_path=dir,
+            describe_title=describe_title,
+            describe=describe,
+            collection="小姐姐",
+            publish_file="kuaishou_to_dy_pub.txt",
+        )
+        break
+    # 清理temp文件夹
+    for file in os.listdir("temp"):
+        if file.endswith(".mp4") or file.endswith(".jpg"):
+            os.remove(os.path.join("temp", file))
+    #保存最后执行的page_num,page_size 到json文件
+    with open("config.json", "w") as f:
+        config["page_num"] = page_num
+        config["page_size"] = page_size
+        json.dump(config, f, indent=4)
+    pass
+
+def handle_pub_txt(video_title:str):
+    arry = video_title.replace("\\n", " ").split(" ")
+    describe_title = ""
+    topic = ""
+    for string in arry:
+        if string.startswith("@"):
+                #去除@人名
+            continue
+        if string.startswith("#"):
+            topic += string + " "
+            pass
+        else:
+            describe_title += string + " "
+    describe = f"{describe_title} {topic} #上热门 #dou上热门 #我要上热门"
+    log(f"describe={describe}")
+    return describe_title,describe
+
+
 if __name__ == "__main__":
+
     # 开始执行视频发布
-    # upload(folder_path="G:\\360AutoRec\\EMERGENCY", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="紧急")
-    upload(
-        folder_path="G:\\360AutoRec\\rec_有电话",
-        # folder_path="E:\\360CARDVR\\REC",
-        describe_title="行车记录仪,记录生活",
-        describe="#行车记录仪",
-        collection="行驶",
-    )
-    # upload(folder_path="G:\\360AutoRec\\rec_有电话", describe_title="行车记录仪,记录生活", describe="#行车记录仪",collection="Self")
-    # input("Press Enter to close...")  # 保持窗口打开
+    # upload(
+    #     folder_path="temp",
+    #     # folder_path="E:\\360CARDVR\\REC",
+    #     describe_title="行车记录仪,记录生活",
+    #     describe="#行车记录仪",
+    #     collection="行驶",
+    # )
+    
+    auto_upload()
+    input("Press Enter to close...")  # 保持窗口打开
 
     # test()

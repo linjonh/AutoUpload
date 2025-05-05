@@ -6,16 +6,18 @@ from my_log import log
 
 
 class video_download_db(BaseSqliteDb):
-    def __init__(self, db_name: str = "video_download.db",table_name: str = "video_material"):
+    def __init__(
+        self, db_name: str = "video_download.db", table_name: str = "video_material"
+    ):
         """初始化数据库类"""
         super().__init__()
-        self.db_name = "video_download.db"
+        self.db_name = db_name
         self.data_path = os.path.join("data_base/data/", self.db_name)
         self.db_connection = None
         self.create_db(self.db_name)
         self.create_table(
-            "video_material",
-            {
+            table_name=table_name,
+            table_fields={
                 "video_id": "INTEGER PRIMARY KEY",
                 "video_title": "TEXT",
                 "download_url": "TEXT",
@@ -61,10 +63,16 @@ class video_download_db(BaseSqliteDb):
     def insert_table(self, table_name: str, data: dict):
         """插入数据"""
         cursor = self.db_connection.cursor()
-        id=data["video_id"]
-        download_url=data["download_url"]
+        id = data["video_id"]
+        download_url: str = data["download_url"]
+        image_url: str = data["image_url"]
+        download_url = download_url[download_url.find(".com") + 4 :]
+        image_url = image_url[image_url.find(".com") + 4 :]
         # print(f"id={id} type={type(id)}")
-        query=cursor.execute(f"select download_url,video_id from {table_name} where video_id=? OR download_url==?",(id,download_url)).fetchone()
+        query = cursor.execute(
+            f"select download_url,video_id from {table_name} where video_id=? OR download_url like ? OR image_url like ?",
+            (id, f"%{download_url}%", f"%{image_url}%"),
+        ).fetchone()
         if query is not None:
             log(f"insert_table: 数据已存在{query}")
             cursor.close()
@@ -72,7 +80,7 @@ class video_download_db(BaseSqliteDb):
         columns = ", ".join(data.keys())
         placeholders = ", ".join(["?"] * len(data))
         sql = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
-        result=cursor.execute(sql, tuple(data.values()))
+        result = cursor.execute(sql, tuple(data.values()))
         self.db_connection.commit()
         log(f"插入数据成功，结果lastrowid={result.lastrowid}")
         cursor.close()
@@ -97,12 +105,23 @@ class video_download_db(BaseSqliteDb):
         cursor.close()
         return True
 
-    def select_table(self, table_name: str, video_id: str):
+    def fech_one_video(self, table_name: str, video_id: str) -> tuple:
         """查询数据"""
         cursor = self.db_connection.cursor()
         sql = f"SELECT * FROM {table_name} WHERE video_id = ?"
         cursor.execute(sql, (video_id,))
         result = cursor.fetchone()
+        cursor.close()
+        return result
+
+    # 分页插叙数据
+    def fech_videos_by_page(self, table_name: str, page_num: int, page_size: int):
+        """分页查询数据"""
+        cursor = self.db_connection.cursor()
+        offset = (page_num - 1) * page_size
+        sql = f"SELECT * FROM {table_name} LIMIT {page_size} OFFSET {offset}"
+        cursor.execute(sql)
+        result = cursor.fetchall()
         cursor.close()
         return result
 
@@ -112,7 +131,7 @@ class video_download_db(BaseSqliteDb):
             self.db_connection.close()
             self.db_connection = None
         else:
-            print("数据库未打开")
+            print("数据库未打开或已关闭")
 
     def __del__(self):
         """析构函数"""

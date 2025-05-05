@@ -33,7 +33,7 @@ class BaseSqliteDb(ABC):
     def delete_table(self, table_name: str, data: dict):
         """删除"""
         pass
-    def select_table(self, table_name: str, data: dict):
+    def fech_one_video(self, table_name: str, data: dict):
         """查询"""
         pass
     pass

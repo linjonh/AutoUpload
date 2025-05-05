@@ -42,6 +42,9 @@ count = 0
 @staticmethod
 def log(msg, level=logging.INFO, frameIndex=1):
     global _isConfigLog
+    if not _isConfigLog:
+        initLog()
+        _isConfigLog = True
     # 增加log文件大小限制，如果超过50MB，重新创建一个新的log文件
     # maxBytes = 1024 * 1024 * 50  # 50MB
     if count == 0:
@@ -62,10 +65,6 @@ def log(msg, level=logging.INFO, frameIndex=1):
             # size = file_size / (1024 * 1024)
             # print(f"当前log文件大小：{size:.2f}MB，继续使用旧的log_handler")
             pass
-
-    if not _isConfigLog:
-        initLog()
-        _isConfigLog = True
 
     # stacks = traceback.format_stack()
 

@@ -6,15 +6,30 @@ ORDER BY `download_url` ASC;
 
 -- 写一个查询download_url字段有重复数据并删除该重复的记录的sql语句
 -- 1. 查询download_url字段有重复数据的记录
-SELECT download_url, COUNT(*) as count
+SELECT SUBSTR(download_url, INSTR(download_url, '.com') + 4) AS url_without_host, COUNT(*) as count
 FROM video_material
-GROUP BY download_url
+GROUP BY url_without_host
 HAVING count > 1;
 -- 2. 删除重复的记录，只保留一条
 DELETE FROM video_material
 WHERE rowid NOT IN (
     SELECT MIN(rowid)
     FROM video_material
-    GROUP BY download_url
+    GROUP BY SUBSTR(download_url, INSTR(download_url, '.com') + 4)
 );
+
+-- 查询image_url字段有重复数据的记录
+SELECT video_title, image_url,COUNT(*) as count
+FROM video_material
+GROUP BY  SUBSTR(image_url, INSTR(image_url, '.com') + 4)
+HAVING count > 1;
+-- 2. 删除重复的记录，只保留一条
+DELETE FROM video_material
+WHERE rowid NOT IN (
+    SELECT MIN(rowid)
+    FROM video_material
+    GROUP BY SUBSTR(image_url, INSTR(image_url, '.com') + 4)
+);
+
+SELECT * FROM video_material WHERE video_title=='#jk日常 #jk制服'
 

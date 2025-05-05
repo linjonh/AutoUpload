@@ -64,6 +64,10 @@ def handle_result():
             log(f"处理结果时发生异常: {e}")
             traceback.log_exc()
             continue
+    # 关闭数据库连接
+    db_class.close_db()
+    log("handle_result 线程结束")
+    
 result_queue = queue.Queue()
 @time_tools.timeCost
 def main(count=2):
@@ -77,7 +81,7 @@ def main(count=2):
     is_io_bound = True  # 如果是 I/O 密集型任务，设置为 True
 
     # 动态设置 max_workers
-    max_workers = cpu_count() * 2 if is_io_bound else cpu_count()
+    max_workers = cpu_count * 2 if is_io_bound else cpu_count
     
     ThreadExecutor = ThreadPoolExecutor(max_workers=max_workers)
     futures = []
@@ -96,4 +100,4 @@ def main(count=2):
     thread.join()
 
 if __name__ == "__main__":
-    main(10_0000)
+    main(50000)

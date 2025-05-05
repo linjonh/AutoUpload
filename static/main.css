@@ -1,0 +1,81 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+h1 {
+    text-align: center;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    background-color: #fff;
+    margin: 2px 0;
+    padding: 5px;
+    padding-bottom: 0px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+a {
+    text-decoration: none;
+    color: #333;
+}
+
+.video-thumbnail {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.pagination {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.pagination a {
+    margin: 0 5px;
+    text-decoration: none;
+    color: #007bff;
+}
+/* 视频列表修改为grid样式 */
+.video-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+}
+.artplayer-app {
+    width: auto;
+    min-height: 300px;
+    height: 720px;  
+    background-color: black;
+    /* aspect-ratio: 16/9; */
+}
+.art-video-player{
+    width: 100% !important;
+    height:    100%;
+    /* aspect-ratio: 16/9; */
+}
+
+.video-detail {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 1000px;
+    margin: 20px auto;
+    /* div内容居中 */
+    margin: 0 auto;
+
+}
+a {
+    color: #007bff;
+    text-decoration: none;
+}

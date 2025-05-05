@@ -1,0 +1,2 @@
+#水印字体，并设置字体大小,和颜色为#808080
+ffmpeg -y -i input.mp4 -filter_complex "[0:v]split=2[v1][v2]; [v1]trim=0:6,setpts=PTS-STARTPTS,drawtext=fontfile='simhei.ttf':fontsize=40:fontcolor=white:text='爵醒影视':x=20:y=20[v1out];  [v2]trim=6:12,setpts=PTS-STARTPTS,drawtext=fontfile='simhei.ttf':fontsize=40:fontcolor=white:text='爵醒影视':x=w-tw-20:y=h-th-20[v2out];  [v1out][v2out]concat=n=2:v=1:a=0[outv]" -map [outv] -map 0:a -c:a copy output.mp4
