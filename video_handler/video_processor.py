@@ -1,5 +1,6 @@
 import os
 import sys
+
 # 暴露 my_log 路径给运行时
 current = os.path.dirname(os.path.abspath(__file__))
 parent = os.path.dirname(current)
@@ -8,7 +9,25 @@ print("parent:", parent)
 sys.path.append(parent)
 
 from my_log import log
-
+def get_xfade():
+    #随机获取一个xfade 特效 滤镜指令，1秒中的
+    import random
+    xfade = [
+        "fade",
+        "wipeleft",
+        "wiperight",
+        "wipeup",
+        "wipedown",
+        "slideleft",
+        "slideright",
+        "slideup",
+        "slidedown",
+        "circleopen",
+        "circleclose",
+        # "boxopen",
+        # "boxclose",
+    ]
+    return random.choice(xfade)
 def add_watermark(
     input="input.mp4",
     output="output.mp4",
@@ -33,18 +52,23 @@ def add_watermark(
     :param gap_y: 水印纵向间距
     :return: 运行结果
     """
-    #修改时间
-    dur=probe_duration(input)
-    duration1 = f"0:{dur/2}"
-    duration2 = f"{dur/2}:{dur}"
+    # 修改时间
+    dur = probe_duration(input)
+    mid = dur/2
+    duration1 = f"0:{mid}"
+    duration2 = f"{mid}:{dur}"
     log("Adding watermark to video...")
     # 使用ffmpeg添加水印，水印隔一段时间出现在不同位置
     # 合并为一条指令，前半段视频水印左上角，后半段水印在右下角
 
-    cmd = (f'ffmpeg -y -i {input} -filter_complex "[0:v]split=2[v1][v2];'
-            +f"[v1]trim={duration1},setpts=PTS-STARTPTS,drawtext=fontfile='simhei.ttf':fontsize={fontsize}:fontcolor={fontcolor}:text='{text}':x={gap_x}:y={gap_y}[v1out];"
-            +f"[v2]trim={duration2},setpts=PTS-STARTPTS,drawtext=fontfile='simhei.ttf':fontsize={fontsize}:fontcolor={fontcolor}:text='{text}':x=w-tw-{gap_x}:y=h-th-{gap_y}[v2out];"
-            +f'[v1out][v2out]concat=n=2:v=1:a=0[outv]" -map [outv] -map 0:a -c:a copy {output}')
+    cmd = (
+        f'ffmpeg -y -i {input} -filter_complex "[0:v]split=2[v1][v2];'
+        + f"[v1]trim={duration1},setpts=PTS-STARTPTS,fps=30,drawtext=fontfile='simhei.ttf':fontsize={fontsize}:fontcolor={fontcolor}:text='{text}':x={gap_x}:y={gap_y}[v1out];"
+        + f"[v2]trim={duration2},setpts=PTS-STARTPTS,fps=30,drawtext=fontfile='simhei.ttf':fontsize={fontsize}:fontcolor={fontcolor}:text='{text}':x=w-tw-{gap_x}:y=h-th-{gap_y}[v2out];"
+        # +f'[v1out][v2out]concat=n=2:v=1:a=0[outv]" -map [outv] -map 0:a -c:a aac {output}')
+        + f'[v1out][v2out]xfade=transition={get_xfade()}:duration=1:offset={mid-1}[outv]" -map [outv] -map 0:a -c:v libx264 -c:a libmp3lame {output}'
+    )
+    log(f"Running command: {cmd}")
     code = os.system(cmd)
     log(f"run cmd result code: {code}")
     return code
@@ -73,6 +97,7 @@ def probe_duration(file_path):
     result = os.popen(cmd).read()
     log(f"Probe result: {result}")
     return float(result.strip().split("=")[1])
+
 
 if __name__ == "__main__":
     # 添加水印

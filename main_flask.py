@@ -25,55 +25,17 @@ def query_data_base(page_num: int = 1, page_size: int = PAGE_SIZE):
         page_size=page_size,
     )
     db.close_db()
-    # 转换为字典列表
-    # "video_id": "INTEGER PRIMARY KEY",
-    # "video_title": "TEXT",
-    # "download_url": "TEXT",
-    # "image_url": "TEXT",
-    # "video_number": "INTEGER",
-    # "Video_platform": "TEXT",
-    # "time": "TEXT",
-    # "tips": "TEXT",
-    
-    videos = [{'video_id': row[0],
-               'video_title': row[1],
-               'download_url': row[2],
-               'image_url': row[3],
-               'video_number': row[4],
-               'Video_platform': row[5],
-               'time': row[6],
-               'tips': row[7]               
-               } for row in lists]
-    return videos
+    return lists
 def query_data_base_one(video_id):
     db = video_download_db(table_name="video_material")
-    data:tuple = db.fech_one_video(
+    data = db.fech_one_video(
         table_name="video_material",
         video_id=video_id,
     )
     db.close_db()
-    # 转换为字典列表
-    # "video_id": "INTEGER PRIMARY KEY",
-    # "video_title": "TEXT",
-    # "download_url": "TEXT",
-    # "image_url": "TEXT",
-    # "video_number": "INTEGER",
-    # "Video_platform": "TEXT",
-    # "time": "TEXT",
-    # "tips": "TEXT",
-    # 开始把data的tuple对象转化为字典
-    result = {
-        'video_id': data[0],
-        'video_title': data[1],
-        'download_url': data[2],
-        'image_url': data[3],
-        'video_number': data[4],
-        'Video_platform': data[5],
-        'time': data[6],
-        'tips': data[7]
-    }   
-    
-    return result
+    if not data:
+        return None    
+    return data
 
 
 @app.route("/", methods=["GET"])

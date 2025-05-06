@@ -1,5 +1,6 @@
 import json
 import os
+import traceback
 import selenium
 from selenium import webdriver
 import pathlib
@@ -26,7 +27,7 @@ def input_brife(driver, describe=""):
         by=By.CSS_SELECTOR,
         value="div.zone-container.editor-kit-container.editor.editor-comp-publish.notranslate.chrome.window.chrome88",
     )
-    data = describe + " #上热门 #dou上热门 #我要上热门"
+    data = describe
     # inputEvent = """{
     #     "isTrusted": true,
     #     "inputType": "insertCompositionText",
@@ -68,7 +69,7 @@ def publish_douyin(
 
     # 等待视频上传完成
     print("视频还在上传中···")
-    time.sleep(80)
+    time.sleep(1)
     while True:
         time.sleep(5)
         try:
@@ -118,7 +119,7 @@ def publish_douyin(
     time.sleep(1)
     # 输入视频描述
     print("输入视频描述title···")
-    data = describe + " #上热门 #dou上热门 #我要上热门"
+    data = describe
 
     driver.find_element(
         by=By.CSS_SELECTOR, value="input.semi-input.semi-input-default"
@@ -141,7 +142,7 @@ def publish_douyin(
         if collection == None:
             driver.find_elements(
                 by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
-            )[0].click()
+            )[2].click()
         else:
             els = driver.find_elements(
                 by=By.CSS_SELECTOR, value="div.semi-select-option.collection-option"
@@ -176,7 +177,7 @@ def publish_douyin(
     # driver.find_element(by=By.XPATH,value='//button[text()="确定"]').click()
 
     time.sleep(1)
-    #选择保密性选项
+    # 选择保密性选项
     driver.find_elements(by=By.CSS_SELECTOR, value="div label.radio-d4zkru")[0].click()
 
     time.sleep(1)
@@ -205,7 +206,14 @@ def publish_douyin(
     return True, "发布成功！"
 
 
-def upload(folder_path=None, describe_title=None, describe=None, collection=None,publish_file="publish_file.txt"):
+def upload(
+    driver: webdriver.Chrome,
+    folder_path=None,
+    describe_title=None,
+    describe=None,
+    collection=None,
+    publish_file_name="publish_file.txt",
+):
     # 基本信息
     if folder_path is None:
         # 视频存放路径
@@ -225,8 +233,8 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
         os.listdir(folder_path),
         key=lambda f: os.path.getmtime(os.path.join(folder_path, f)),
     )
-    if os.path.exists(publish_file):
-        with open(publish_file, "r", encoding="utf-8") as f:
+    if os.path.exists(publish_file_name):
+        with open(publish_file_name, "r", encoding="utf-8") as f:
             publish_file = f.read().split("\n")
             print(f"publish_file size={len(publish_file)}")
     else:
@@ -234,9 +242,7 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
 
     # options = webdriver.ChromeOptions()
     # options.add_experimental_option("debuggerAddress", "127.0.0.1:5003")
-    driver = setup_driver()
-    # 进入创作者页面，并上传视频
-    driver.get("https://creator.douyin.com/creator-micro/home")
+
     time.sleep(2)
     count = 0
     for i in range(len(files)):
@@ -274,13 +280,13 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
                 describe=describe,
                 collection=collection,
             )
-            my_log.log(tuple_result)
+            my_log.log(f"发布结果：{tuple_result}")
             result, text = tuple_result
             if result:
                 publish_file.append(path_mp4)
                 my_log.log("发布成功！size=", len(publish_file))
                 count += 1
-                with open(publish_file, "a", encoding="utf-8") as f:
+                with open(publish_file_name, "a", encoding="utf-8") as f:
                     f.write(f"{path_mp4}\n")
             else:
                 my_log.log(f"发布失败！{text}")
@@ -290,11 +296,12 @@ def upload(folder_path=None, describe_title=None, describe=None, collection=None
             #     break
         except Exception as e:
             print(e)
+            traceback.print_exc()
             my_log.log("发布失败！")
         time.sleep(2)
     my_log.log(f"已发布{count}个视频")
 
-    with open("publish_file.txt", "w", encoding="utf-8") as f:
+    with open(publish_file_name, "w", encoding="utf-8") as f:
         f.write("\n".join(publish_file))
 
 
@@ -335,17 +342,17 @@ def setup_driver():
     return driver
 
 
-def auto_upload():
+def auto_upload(driver:webdriver.Chrome):
     # 查询数据库
     table_name = "video_material"
     db = video_download_db(table_name=table_name)
     # 读取json配置文件获取最后执行的page_num,page_size
-    #需要检查是否存在config.json文件
+    # 需要检查是否存在config.json文件
     if not os.path.exists("config.json"):
         # 如果不存在，则创建一个新的config.json文件
         config = {
             "page_num": 1,
-            "page_size": 2,
+            "page_size": 10,
         }
         with open("config.json", "w") as f:
             json.dump(config, f, indent=4)
@@ -354,7 +361,7 @@ def auto_upload():
         page_num = config.get("page_num", 1)
         page_size = config.get("page_size", 2)
     list_videos = query_data_base(page_num=page_num, page_size=page_size)
-    for video in list_videos:
+    for video in list_videos[2:]:
         video_id = video["video_id"]
         video_title: str = video["video_title"]
         download_url = video["download_url"]
@@ -363,53 +370,76 @@ def auto_upload():
         Video_platform = video["Video_platform"]
         time = video["time"]
         tips = video["tips"]
-        #下载好视频
-        path=save_download_video(video_id, download_url)
-        #添加水印
-        code=add_watermark(input=path,output=f"temp/video_{video_id}_out.mp4")
+        # 下载好视频
+        path = save_download_video(video_id, download_url)
+        # 添加水印
+        code = add_watermark(input=path, output=f"temp/video_{video_id}_out.mp4")
         os.remove(path)
         if code != 0:
             print("添加水印失败！")
             continue
-        #准备好文案
+        # 准备好文案
         describe_title, describe = handle_pub_txt(video_title)
         # 发布视频
-        dir=os.path.dirname(os.path.abspath(path))
+        dir = os.path.dirname(os.path.abspath(path))
+        
         upload(
+            driver=driver,
             folder_path=dir,
             describe_title=describe_title,
             describe=describe,
-            collection="小姐姐",
-            publish_file="kuaishou_to_dy_pub.txt",
+            collection="人间值得",
+            publish_file_name="kuaishou_to_dy_pub.txt",
         )
-        break
+        # break
     # 清理temp文件夹
     for file in os.listdir("temp"):
         if file.endswith(".mp4") or file.endswith(".jpg"):
             os.remove(os.path.join("temp", file))
-    #保存最后执行的page_num,page_size 到json文件
+    # 保存最后执行的page_num,page_size 到json文件
+    log(f"保存最后执行的page_num={page_num} page_size={page_size} 到config.json")
     with open("config.json", "w") as f:
-        config["page_num"] = page_num
+        config["page_num"] = page_num+1  #for next page
         config["page_size"] = page_size
         json.dump(config, f, indent=4)
     pass
 
-def handle_pub_txt(video_title:str):
+
+def handle_pub_txt(video_title: str):
+    log(f"原始={video_title}")
     arry = video_title.replace("\\n", " ").split(" ")
     describe_title = ""
     topic = ""
     for string in arry:
         if string.startswith("@"):
-                #去除@人名
+            # 去除@人名
             continue
         if string.startswith("#"):
             topic += string + " "
             pass
+        elif "..." in string:
+            continue
+        elif string.find("@") != -1:
+            # 去除@人名
+            name = string[string.find("@")+1 :]
+            string = string[: string.find("@")]
+            while True:
+                if name.find("@") == -1:
+                    break
+                string += name[: name.find("@")]
+                name = name[name.find("@")+1 :]
+            describe_title += string
         else:
-            describe_title += string + " "
-    describe = f"{describe_title} {topic} #上热门 #dou上热门 #我要上热门"
-    log(f"describe={describe}")
-    return describe_title,describe
+            describe_title +=string.strip()+" "
+    if topic.strip() == "":
+        topic = "#小姐姐 #可爱 #美女 #记录美好生活"
+    if describe_title.strip() == "":
+        describe_title = "小姐姐"
+    describe = f"{describe_title}{topic}"
+
+    log(f"处理后={describe}")
+
+    return describe_title, describe
 
 
 if __name__ == "__main__":
@@ -422,8 +452,22 @@ if __name__ == "__main__":
     #     describe="#行车记录仪",
     #     collection="行驶",
     # )
+    def test_handle_text():
+        db = video_download_db()
+        data = db.fech_one_video(table_name=db.table_name, video_id="13")
+        list = db.fech_videos_by_page(table_name=db.table_name, page_num=1, page_size=100)
+
+        title = data["video_title"]
+        handle_pub_txt(title)
+        for i in list:
+            # print(i)
+            print(i["video_id"])
+            handle_pub_txt(i["video_title"])
+    driver = setup_driver()
+    # 进入创作者页面，并上传视频
+    driver.get("https://creator.douyin.com/creator-micro/home")
     
-    auto_upload()
+    auto_upload(driver)
     input("Press Enter to close...")  # 保持窗口打开
 
     # test()

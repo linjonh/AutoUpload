@@ -12,6 +12,7 @@ class video_download_db(BaseSqliteDb):
         """初始化数据库类"""
         super().__init__()
         self.db_name = db_name
+        self.table_name = table_name
         self.data_path = os.path.join("data_base/data/", self.db_name)
         self.db_connection = None
         self.create_db(self.db_name)
@@ -105,14 +106,14 @@ class video_download_db(BaseSqliteDb):
         cursor.close()
         return True
 
-    def fech_one_video(self, table_name: str, video_id: str) -> tuple:
+    def fech_one_video(self, table_name: str, video_id: str) -> dict:
         """查询数据"""
         cursor = self.db_connection.cursor()
         sql = f"SELECT * FROM {table_name} WHERE video_id = ?"
         cursor.execute(sql, (video_id,))
         result = cursor.fetchone()
         cursor.close()
-        return result
+        return self.transform_tuple_to_dict(result) if result else None
 
     # 分页插叙数据
     def fech_videos_by_page(self, table_name: str, page_num: int, page_size: int):
@@ -123,8 +124,24 @@ class video_download_db(BaseSqliteDb):
         cursor.execute(sql)
         result = cursor.fetchall()
         cursor.close()
+        # 转换为字典列表
+        result = [
+            self.transform_tuple_to_dict(row) for row in result
+        ]
         return result
-
+    def transform_tuple_to_dict(self, data: tuple) -> dict:
+        """将元组转换为字典"""
+        keys = [
+            "video_id",
+            "video_title",
+            "download_url",
+            "image_url",
+            "video_number",
+            "Video_platform",
+            "time",
+            "tips",
+        ]
+        return dict(zip(keys, data))
     def close_db(self):
         """关闭数据库"""
         if self.db_connection:
