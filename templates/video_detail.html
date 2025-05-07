@@ -7,6 +7,15 @@
     <title>视频详情页</title>
     <script src="https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-0819T5RCLD"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-0819T5RCLD');
+    </script>
 </head>
 
 <body>
@@ -21,7 +30,7 @@
     # "tips": "TEXT",
     # 开始把data的tuple对象转化为字典-->
     <div class="video-detail">
-       
+
         <!-- 集成artplayer -->
         <div class="artplayer-app"></div>
         <script>
@@ -133,36 +142,36 @@
                         },
                     },
                 ],
-               /* layers: [
-                    {
-                        html: '<img width="100" src="/assets/sample/layer.png">',
-                        click: function () {
-                            window.open('https://aimu.app');
-                            console.info('You clicked on the custom layer');
-                        },
-                        style: {
-                            position: 'absolute',
-                            top: '20px',
-                            right: '20px',
-                            opacity: '.9',
-                        },
-                    },
-                ],
-                  quality: [
-                    {
-                        default: true,
-                        html: 'SD 480P',
-                        url: '{{ video.download_url }}?q=480',
-                    },
-                    {
-                        html: 'HD 720P',
-                        url: '{{ video.download_url }}?q=720',
-                    },
-                    {
-                        html: 'HD 1080P',
-                        url: '{{ video.download_url }}?q=1080',
-                    },
-                ],  */
+                /* layers: [
+                     {
+                         html: '<img width="100" src="/assets/sample/layer.png">',
+                         click: function () {
+                             window.open('https://aimu.app');
+                             console.info('You clicked on the custom layer');
+                         },
+                         style: {
+                             position: 'absolute',
+                             top: '20px',
+                             right: '20px',
+                             opacity: '.9',
+                         },
+                     },
+                 ],
+                   quality: [
+                     {
+                         default: true,
+                         html: 'SD 480P',
+                         url: '{{ video.download_url }}?q=480',
+                     },
+                     {
+                         html: 'HD 720P',
+                         url: '{{ video.download_url }}?q=720',
+                     },
+                     {
+                         html: 'HD 1080P',
+                         url: '{{ video.download_url }}?q=1080',
+                     },
+                 ],  */
                 thumbnails: {
                     url: '{{ video.image_url }}',
                     number: 60,
@@ -220,13 +229,13 @@
                     indicator: '<img width="16" heigth="16" src="/assets/img/indicator.svg">',
                 },*/
             });
-            
+
         </script>
         <p>描述: {{ video.video_title }}</p>
         <p>上传时间: {{ video.time }}</p>
         <p>点赞数: {{ video.video_number }}</p>
         <p>平台: {{ video.Video_platform }} id={{ video.video_id }} <a href="{{video.download_url}}">url下载地址</a></p>
-        
+
     </div>
 
 </body>
