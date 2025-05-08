@@ -28,11 +28,6 @@ a {
     color: #333;
 }
 
-.video-thumbnail {
-    max-width: 100%;
-    height: auto;
-    border-radius: 5px;
-}
 
 .pagination {
     text-align: center;
@@ -49,6 +44,27 @@ a {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 10px;
+}
+.video-thumbnail {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+}
+
+.image-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 10px;
+}
+.image-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+}
+.image-thumbnail {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
 }
 .artplayer-app {
     width: auto;

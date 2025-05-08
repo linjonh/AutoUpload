@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 
 from data_base.download_video_db import video_download_db
+from data_base.meirentu_sqlite_db import query_mei_data_base, query_mei_image_data_base
 from my_log import log
 
 app = Flask(__name__)
@@ -37,11 +38,26 @@ def query_data_base_one(video_id):
         return None    
     return data
 
+@app.route("/pic=<int:page_num>", methods=["GET"])
+def meirentu(page_num:int=1):
+    # 处理请求参数
+    data_list=query_mei_data_base(page_num=page_num, limit=24)
+    return render_template("meirentu.html", data_list=data_list, page=page_num, total_pages=10)
+@app.route("/pic/id=<id>", methods=["GET"])
+def image_detail(id):
+    # 处理请求参数
+    photo=query_mei_image_data_base(photo_id=id)
+    
+    return render_template("image_detail.html", photo=photo)
 
 @app.route("/", methods=["GET"])
 def home():
     datas = query_data_base(page_num=1, page_size=PAGE_SIZE)
     return render_template("index.html", videos=datas, page=1, total_pages=10)
+
+@app.route("/pic", methods=["GET"])
+def pic():
+    return meirentu(1)
 
 
 @app.route("/page=<int:page_num>", methods=["GET"])

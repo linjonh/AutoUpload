@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>写真图片列表页</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}">
+</head>
+
+<body>
+    <h1>写真图片列表页</h1>
+    <!-- 视频列表，格式修改为grid -->
+    <ul class="image-list">
+        <!-- 视频列表项 -->
+        {% for photo in data_list %}
+        <li>
+            <a href="{{ url_for('image_detail', id=photo.photo_id) }}">
+                <div class="image-item">
+                    <!-- 视频封面 -->
+                    <img async src="https://proxy.codelin.vip/{{ photo.url }}?og=m" alt="{{ photo.title }}"  aria-placeholder="" class="image-thumbnail" />
+                    <p><i class="fas fa-video"></i> {{ photo.title }}</p>
+                    <!-- 视频item的发布时间 -->
+                </div>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    <!-- 分页 -->
+    <div class="pagination">
+        {% if page > 1 %}
+        <a href="{{ url_for('meirentu', page_num=page-1) }}">&laquo; 上一页</a>
+        {% endif %}
+        <span>第 {{ page }} 页</span>
+        {% if page < total_pages %} <a href="{{ url_for('meirentu', page_num=page+1) }}">下一页 &raquo;</a>
+            {% endif %}
+    </div>
+</body>
+
+</html>
