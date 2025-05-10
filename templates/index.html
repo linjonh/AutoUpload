@@ -15,7 +15,7 @@
 
         gtag('config', 'G-0819T5RCLD');
     </script>
-    <meta name="keywords" content="视频素材, 短视频, 视频列表, 视频播放, 短视频平台"/>
+    <meta name="keywords" content="视频素材, 短视频, 视频列表, 视频播放, 短视频平台" />
     <meta name="Description" content="视频素材, 短视频, 视频列表, 视频播放, 短视频平台">
     <meta property="og:url" content="https://v.codelin.vip">
     <meta property="og:site_name" content="短视频,视频素材">
@@ -34,8 +34,9 @@
         <!-- 视频列表项 -->
         {% for video in videos %}
         <li>
-            <a href="{{ url_for('video_detail', video_id=video.video_id) }}">
-                <div class="video-item">
+            <div class="video-item">
+                <a href="{{ url_for('video_detail', video_id=video.video_id) }}">
+
                     <!-- 视频封面 -->
                     <img src="{{ video.image_url }}" alt="{{ video.video_title }}" class="video-thumbnail" />
                     <p><i class="fas fa-video"></i> {{ video.video_title }}</p>
@@ -43,8 +44,8 @@
                     <p>发布时间: {{ video.time }}</p>
                     <!-- 视频item的播放量 -->
                     <p>{{video.video_number}}</p>
-                </div>
-            </a>
+                </a>
+            </div>
         </li>
         {% endfor %}
     </ul>
@@ -55,8 +56,14 @@
         {% endif %}
         <span>第 {{ page }} 页</span>
         {% if page < total_pages %} <a href="{{ url_for('index', page_num=page+1) }}">下一页 &raquo;</a>
+
             {% endif %}
     </div>
+    <script src="{{ url_for('static',filename='js.js')}}"></script>
+    
+    <script>
+        send("home")
+    </script>
 </body>
 
 </html>

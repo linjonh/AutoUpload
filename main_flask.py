@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, jsonify
+import json
+from flask import Flask, Response, render_template, request, jsonify
 
 from data_base.download_video_db import video_download_db
 from data_base.meirentu_sqlite_db import query_mei_data_base, query_mei_image_data_base
@@ -75,3 +76,13 @@ def video_detail(video_id: int):
     if not data:
         return jsonify({"error": "Video not found"}), 404
     return render_template("video_detail.html", video=data)
+
+@app.route("/c",methods=["POST"])
+def collec():
+    log(f"request {request.host_url}")
+    for h in request.headers:
+        log(f"{h}")
+    data=request.get_json(silent=True)
+    pretify=json.dumps(data,indent=4,ensure_ascii=False)
+    log(f"data={pretify}")
+    return Response(response='{"result":"success"}',status=200)

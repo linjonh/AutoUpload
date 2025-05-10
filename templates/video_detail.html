@@ -16,6 +16,7 @@
 
         gtag('config', 'G-0819T5RCLD');
     </script>
+
     <meta name="keywords" content="视频素材, 短视频, 视频列表, 视频播放, 短视频平台"/>
     <meta name="Description" content="视频素材, 短视频, 视频列表, 视频播放, 短视频平台">
     <meta property="og:url" content="https://v.codelin.vip">
@@ -43,6 +44,8 @@
 
         <!-- 集成artplayer -->
         <div class="artplayer-app"></div>
+        <script src="{{ url_for('static',filename='js.js')}}"></script>
+
         <script>
             const art = new Artplayer({
                 container: '.artplayer-app',
@@ -239,7 +242,7 @@
                     indicator: '<img width="16" heigth="16" src="/assets/img/indicator.svg">',
                 },*/
             });
-            
+            send("{video_detail={{video.video_id}},title={{video.video_title}}}")
         </script>
         <p>描述: {{ video.video_title }}</p>
         <p>上传时间: {{ video.time }}</p>
