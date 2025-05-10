@@ -8,8 +8,18 @@ from my_log import log
 app = Flask(__name__)
 PAGE_SIZE = 1000
 
+def log_reqeust():
+    log(f"request {request}")
+    _from=request.headers.get("From")
+    if _from is not None and "googlebot" in _from:
+        ua=request.headers.get("User-Agent")
+        log(f"from googlebot: {ua}")
+    else:
+        log(f"{request.headers}")
+
 @app.route("/api", methods=["POST"])
 def api():
+    log_reqeust()
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -41,11 +51,13 @@ def query_data_base_one(video_id):
 
 @app.route("/pic=<int:page_num>", methods=["GET"])
 def meirentu(page_num:int=1):
+    log_reqeust()
     # 处理请求参数
     data_list=query_mei_data_base(page_num=page_num, limit=24)
     return render_template("meirentu.html", data_list=data_list, page=page_num, total_pages=10)
 @app.route("/pic/id=<id>", methods=["GET"])
 def image_detail(id):
+    log_reqeust()
     # 处理请求参数
     photo=query_mei_image_data_base(photo_id=id)
     
@@ -53,22 +65,19 @@ def image_detail(id):
 
 @app.route("/", methods=["GET"])
 def home():
-    log(f"request {request}")
-    log(f"{request.headers}")
+    log_reqeust()
     datas = query_data_base(page_num=1, page_size=PAGE_SIZE)
     return render_template("index.html", videos=datas, page=1, total_pages=10)
 
 @app.route("/pic", methods=["GET"])
 def pic():
-    log(f"request {request}")
-    log(f"{request.headers}")
+    log_reqeust()
     return meirentu(1)
 
 
 @app.route("/page=<int:page_num>", methods=["GET"])
 def index(page_num: int):
-    log(f"request {request}")
-    log(f"{request.headers}")
+    log_reqeust()
     if page_num < 1:
         page_num = 1
     if page_num > 10:
@@ -78,8 +87,7 @@ def index(page_num: int):
 
 @app.route("/video_id=<int:video_id>", methods=["GET"])
 def video_detail(video_id: int):
-    log(f"request {request}")
-    log(f"{request.headers}")
+    log_reqeust()
     data=query_data_base_one(video_id)
     if not data:
         return jsonify({"error": "Video not found"}), 404
@@ -87,8 +95,7 @@ def video_detail(video_id: int):
 
 @app.route("/c",methods=["POST"])
 def collec():
-    log(f"request {request}")
-    log(f"{request.headers}")
+    log_reqeust()
     data=request.get_json(silent=True)
     pretify=json.dumps(data,indent=4,ensure_ascii=False)
     log(f"data={pretify}")
