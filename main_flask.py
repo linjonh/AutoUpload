@@ -53,16 +53,22 @@ def image_detail(id):
 
 @app.route("/", methods=["GET"])
 def home():
+    log(f"request {request}")
+    log(f"{request.headers}")
     datas = query_data_base(page_num=1, page_size=PAGE_SIZE)
     return render_template("index.html", videos=datas, page=1, total_pages=10)
 
 @app.route("/pic", methods=["GET"])
 def pic():
+    log(f"request {request}")
+    log(f"{request.headers}")
     return meirentu(1)
 
 
 @app.route("/page=<int:page_num>", methods=["GET"])
 def index(page_num: int):
+    log(f"request {request}")
+    log(f"{request.headers}")
     if page_num < 1:
         page_num = 1
     if page_num > 10:
@@ -72,6 +78,8 @@ def index(page_num: int):
 
 @app.route("/video_id=<int:video_id>", methods=["GET"])
 def video_detail(video_id: int):
+    log(f"request {request}")
+    log(f"{request.headers}")
     data=query_data_base_one(video_id)
     if not data:
         return jsonify({"error": "Video not found"}), 404
@@ -79,9 +87,8 @@ def video_detail(video_id: int):
 
 @app.route("/c",methods=["POST"])
 def collec():
-    log(f"request {request.host_url}")
-    for h in request.headers:
-        log(f"{h}")
+    log(f"request {request}")
+    log(f"{request.headers}")
     data=request.get_json(silent=True)
     pretify=json.dumps(data,indent=4,ensure_ascii=False)
     log(f"data={pretify}")
