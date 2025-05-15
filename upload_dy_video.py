@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import traceback
 import selenium
 from selenium import webdriver
@@ -208,11 +209,11 @@ def publish_douyin(
 
 def upload(
     driver: webdriver.Chrome,
-    folder_path=None,
     describe_title=None,
     describe=None,
     collection=None,
-    publish_file_name="publish_file.txt",
+    folder_path=None,
+    published_file_name="publish_file.txt",
 ):
     # 基本信息
     if folder_path is None:
@@ -233,8 +234,8 @@ def upload(
         os.listdir(folder_path),
         key=lambda f: os.path.getmtime(os.path.join(folder_path, f)),
     )
-    if os.path.exists(publish_file_name):
-        with open(publish_file_name, "r", encoding="utf-8") as f:
+    if os.path.exists(published_file_name):
+        with open(published_file_name, "r", encoding="utf-8") as f:
             publish_file = f.read().split("\n")
             print(f"publish_file size={len(publish_file)}")
     else:
@@ -286,7 +287,7 @@ def upload(
                 publish_file.append(path_mp4)
                 my_log.log("发布成功！size=", len(publish_file))
                 count += 1
-                with open(publish_file_name, "a", encoding="utf-8") as f:
+                with open(published_file_name, "a", encoding="utf-8") as f:
                     f.write(f"{path_mp4}\n")
             else:
                 my_log.log(f"发布失败！{text}")
@@ -301,7 +302,7 @@ def upload(
         time.sleep(2)
     my_log.log(f"已发布{count}个视频")
 
-    with open(publish_file_name, "w", encoding="utf-8") as f:
+    with open(published_file_name, "w", encoding="utf-8") as f:
         f.write("\n".join(publish_file))
 
 
@@ -331,18 +332,19 @@ def setup_driver():
     # options.add_argument("--remote-debugging-port=5003")  # 允许调试
     # options.add_argument("--user-data-dir=C:\\Users\\Administrator\\AppData\\Local\\Google\\Chrome\\User Data")  # 设置用户数据目录
     options.add_argument("--user-data-dir=C:\\Py_selenium\\auto")  # 设置用户数据目录
-    options.add_argument("--proxy-server=http://localhost:7890")  # 设置代理
+    # options.add_argument("--proxy-server=http://localhost:7890")  # 设置代理
     options.binary_location = (
         "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     )
     driver = webdriver.Chrome(
         options=options,
+        #下载地址https://googlechromelabs.github.io/chrome-for-testing/#stable
         service=ChromeService(executable_path="G:\\chromedriver.exe"),
     )
     return driver
 
 
-def auto_upload(driver:webdriver.Chrome):
+def auto_upload_kuaishou_video(driver:webdriver.Chrome):
     # 查询数据库
     table_name = "video_material"
     db = video_download_db(table_name=table_name)
@@ -389,7 +391,7 @@ def auto_upload(driver:webdriver.Chrome):
             describe_title=describe_title,
             describe=describe,
             collection="人间值得",
-            publish_file_name="kuaishou_to_dy_pub.txt",
+            published_file_name="kuaishou_to_dy_pub.txt",
         )
         # break
     # 清理temp文件夹
@@ -404,6 +406,15 @@ def auto_upload(driver:webdriver.Chrome):
         json.dump(config, f, indent=4)
     pass
 
+def auto_upload_gen_video(driver:webdriver.Chrome,describe_title,describe,published_file_name,collection="",folder_path=""):
+    upload(
+            driver=driver,
+            describe_title=describe_title,
+            describe=describe,
+            collection=collection,
+            folder_path=folder_path,
+            published_file_name="gen_video.txt",
+        )
 
 def handle_pub_txt(video_title: str):
     log(f"原始={video_title}")
@@ -463,11 +474,23 @@ if __name__ == "__main__":
             # print(i)
             print(i["video_id"])
             handle_pub_txt(i["video_title"])
+    args=sys.argv
+    print(args)
     driver = setup_driver()
     # 进入创作者页面，并上传视频
     driver.get("https://creator.douyin.com/creator-micro/home")
-    
-    auto_upload(driver)
-    input("Press Enter to close...")  # 保持窗口打开
+    if len(args)>0:
+        print(f"file_name={args[0]}")
+        equal= args[1] == "-upload-gen-video"
+        print(f"相等吗?{equal} {args[2]}")
+        if args[1]=="-upload-kuaishou":
+            auto_upload_kuaishou_video(driver)
+        elif equal:
+            title=args[2]
+            desc=args[3]
+            parent=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            auto_upload_gen_video(driver,title,desc,"gen_video.txt",collection="",folder_path=f"{parent}/VideoPlayground/out_mp4")
+        
+    # input("Press Enter to close...")  # 保持窗口打开
 
     # test()
