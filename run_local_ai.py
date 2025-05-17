@@ -30,8 +30,7 @@ If you have the inclination to fix it, you are also encouraged to fix it and sub
 Many older Rhino issues were logged in [Bugzilla](https://bugzilla.mozilla.org/enter_bug.cgi?product=Rhino). There may be some bugs there of historical interest. Note that Rhino has its own product category.
 """
 
-data = """
----
+data = """---
 permalink: /404.html
 ---
 ```js
@@ -53,7 +52,7 @@ Oh no! Whatever you were looking for isn't there, sorry about that...
 """
 
 
-def stream_api(data_str: str = data,model="deepseek-r1:8B",callback=None):
+def stream_api(prompt="帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译",data_str: str = data,model="deepseek-r1:8B",callback=None):
     """使用流式API"""
     # 1. 创建一个请求，设置请求方法、URL和请求体
     # 2. 使用requests库发送请求，并获取响应流
@@ -62,18 +61,22 @@ def stream_api(data_str: str = data,model="deepseek-r1:8B",callback=None):
 
     # 发送POST请求，设置流式传输
     # 注意：这里的URL需要替换为实际的API地址
-    response_stream = requests.request(
+    response = requests.request(
         method="POST",
         url="http://localhost:11434/api/generate",
         data=None,
         json={
             "model": model,
-            "prompt": f"帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译：{data_str}",
+            "prompt": f"{prompt}：{data_str}",
             "stream": True,
         },
         stream=True,
-    ).iter_content(chunk_size=None)
-    for chunk in response_stream:
+    )
+    if response.status_code==200:
+        print("请求失败，状态码：", response.status_code)
+        return None
+    response.iter_content(chunk_size=None)
+    for chunk in response:
         if chunk:
             response = chunk.decode("utf-8")
             dict_str: dict = json.loads(response)
@@ -86,7 +89,7 @@ def stream_api(data_str: str = data,model="deepseek-r1:8B",callback=None):
 
 
 @timeCost
-def sync_api(data_str: str = data,model="deepseek-r1:8B"):
+def sync_api(prompt="帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译",data_str: str = data,model="deepseek-r1:8B"):
     """使用同步API"""
     # 1. 创建一个请求，设置请求方法、URL和请求体
     # 2. 使用requests库发送请求，并获取响应
@@ -99,7 +102,7 @@ def sync_api(data_str: str = data,model="deepseek-r1:8B"):
         data=None,
         json={
             "model": model,
-            "prompt": f"帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译：{data_str}",
+            "prompt": f"{prompt}：{data_str}",
             "stream": False,
         },
     )
@@ -114,7 +117,7 @@ def sync_api(data_str: str = data,model="deepseek-r1:8B"):
         print("没有返回结果")
         return None
     index = result.find("</think>") + len("</think>")
-    string: str = result[index:]
+    string: str = result[index:].replace("\n","").replace("##","")
     response = string.strip()
     print(response)
     # with open("test.md", "w", encoding="utf-8") as f:
