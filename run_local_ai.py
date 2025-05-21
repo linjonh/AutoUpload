@@ -5,6 +5,8 @@ import requests
 
 from utils import timeCost
 
+MODE_NAME="deepseek-r1:671b"
+
 data = """---
 title: Community
 nav_order: 3
@@ -52,7 +54,7 @@ Oh no! Whatever you were looking for isn't there, sorry about that...
 """
 
 
-def stream_api(prompt="帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译",data_str: str = data,model="deepseek-r1:8B",callback=None):
+def stream_api(prompt="直接输出答案，不要思考过程。帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译",data_str: str = data,model=MODE_NAME,callback=None):
     """使用流式API"""
     # 1. 创建一个请求，设置请求方法、URL和请求体
     # 2. 使用requests库发送请求，并获取响应流
@@ -89,7 +91,7 @@ def stream_api(prompt="帮我翻译一下markdow文件成中文,注意front matt
 
 
 @timeCost
-def sync_api(prompt="帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译",data_str: str = data,model="deepseek-r1:8B"):
+def sync_api(prompt="直接输出答案，不要思考过程。帮我翻译一下markdow文件成中文,注意front matter字段名称不要翻译",data_str: str = data,model=MODE_NAME):
     """使用同步API"""
     # 1. 创建一个请求，设置请求方法、URL和请求体
     # 2. 使用requests库发送请求，并获取响应
@@ -129,8 +131,9 @@ if __name__ == "__main__":
     #解析命令行参数，获取大模型名称
     import argparse
     parser = argparse.ArgumentParser(description="翻译markdown文件")
+    # deepseek-r1:671b 
     parser.add_argument(
-        "-m", "--model", type=str, default="deepseek-r1:8B", help="大模型名称"
+        "-m", "--model", type=str, default=MODE_NAME, help="大模型名称"
     )
     args = parser.parse_args()
     model = args.model
