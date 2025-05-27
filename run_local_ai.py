@@ -125,8 +125,40 @@ def sync_api(prompt="直接输出答案，不要思考过程。帮我翻译一�
     # with open("test.md", "w", encoding="utf-8") as f:
     #     f.write(string.strip())
     return response
+@timeCost
+def translate_rhino_doc(model):
+    """翻译函数"""
+    i18n = "i18n/en/docusaurus-plugin-content-docs/current"
+    count = 0
+    for root, dirs, files in os.walk(f"../rhino-doc/{i18n}/"):
+        for file in files:
+            if file.endswith(".md"):
+                count+=1
+                path = os.path.join(root, file)
+                print(f"正在翻译文件：{path}")
+                with open(path, "r", encoding="utf-8") as f:
+                    data = f.read()
+                response = sync_api(data,model=model)
+                if response is None:
+                    print("翻译失败")
+                    continue
+                with open(path.replace(i18n, "docs"), "w", encoding="utf-8") as f:
+                    print(response[:50])
+                    f.write(response)
+            # break
+        # break
+    print(f"翻译完成，共翻译{count}个文件")
 
-
+def translate_ffmpeg_doc():
+    with open("tmp.txt","w",encoding="utf-8") as file:
+        res=requests.get("https://raw.githubusercontent.com/FFmpeg/web/c04961c68cd86ab387fa4ccd7d621f378565ba05/src/index")
+        if res.status_code==200:
+            data=res.text
+            file.write(data)
+            print("saved content")
+            response = sync_api(prompt="直接输出答案，不要思考过程。帮我翻译网页,把其中英文翻译成中文网页，保留原本的html的tag标签，不要总结成markdown",data_str=data,model=model)
+            with open("tmp_trans.txt", "w", encoding="utf-8") as f:
+                f.write(response)
 if __name__ == "__main__":
     #解析命令行参数，获取大模型名称
     import argparse
@@ -140,26 +172,10 @@ if __name__ == "__main__":
     print(f"大模型名称：{model}")
     # stream_api(model=model)  
     
-    @timeCost
-    def translate(model):
-        """翻译函数"""
-        i18n = "i18n/en/docusaurus-plugin-content-docs/current"
-        count = 0
-        for root, dirs, files in os.walk(f"../rhino-doc/{i18n}/"):
-            for file in files:
-                if file.endswith(".md"):
-                    count+=1
-                    path = os.path.join(root, file)
-                    print(f"正在翻译文件：{path}")
-                    with open(path, "r", encoding="utf-8") as f:
-                        data = f.read()
-                    response = sync_api(data,model=model)
-                    if response is None:
-                        print("翻译失败")
-                        continue
-                    with open(path.replace(i18n, "docs"), "w", encoding="utf-8") as f:
-                        f.write(response)
-                # break
-            # break
-        print(f"翻译完成，共翻译{count}个文件")
-    translate(model)
+   
+    # translate_rhino_doc(model)
+
+    #尝试翻译一下ffmpeg的网页格式
+
+    translate_ffmpeg_doc()
+
