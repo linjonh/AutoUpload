@@ -1,9 +1,0 @@
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_2_out.mp4
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_3_out.mp4
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_4_out.mp4
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_5_out.mp4
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_10_out.mp4
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_11_out.mp4
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_12_out.mp4
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_13_out.mp4
-G:\WorkSpaceXXX\MyPROJECT\AutoUpload\temp\video_15_out.mp4
